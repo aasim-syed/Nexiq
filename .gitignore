@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# env & secrets
+.env
+.env.*
+client_secret*.json
+*.p8
+supabase-service-role-key.txt
+
+client_secret_415321992116-n166kbvl6bon6vs4ls5juusmdk40v7u3.apps.googleusercontent.com.json
