@@ -13,7 +13,8 @@ return (
 </div>
 <div className="md:col-span-2">
 <div className="rounded-2xl border bg-white p-6 min-h-[320px]">
-<div className="text-xl font-semibold mb-3">Header Text: "Get My Ebook"</div>
+<div className="text-xl font-semibold mb-3">Header Text: {"\"Get My Ebook\""}</div>
+
 <div className="h-24 bg-gray-100 rounded-xl mb-3" />
 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
 <input placeholder="Name" className="rounded-xl border px-3 py-2" />
