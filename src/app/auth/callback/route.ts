@@ -6,12 +6,14 @@ export async function GET(request: Request) {
   const code = url.searchParams.get("code");
   const next = url.searchParams.get("next") || "/";
 
-  const base = process.env.APP_URL ?? "http://localhost:3000";
+  // Always redirect to the same origin that handled this callback
+  const base = `${url.protocol}//${url.host}`;
+
   if (!code) {
     return NextResponse.redirect(new URL("/login", base));
   }
 
-  // Prepare the redirect response FIRST so Supabase can attach cookies to it.
+  // Prepare redirect so Supabase can attach cookies to THIS response
   const redirectResponse = NextResponse.redirect(new URL(next, base));
 
   const supabase = createServerClient(
@@ -20,16 +22,18 @@ export async function GET(request: Request) {
     {
       cookies: {
         get(name: string) {
-          return request.headers.get("cookie")
-            ?.split(";")
-            .map((c: string) => c.trim())
-            .find((c: string) => c.startsWith(`${name}=`))
-            ?.split("=")[1] ?? null;
+          // read cookies from the incoming request headers
+          const cookieHeader = (request.headers.get("cookie") ?? "");
+          const match = cookieHeader
+            .split(";")
+            .map((c) => c.trim())
+            .find((c) => c.startsWith(`${name}=`));
+          return match ? match.split("=")[1] : null;
         },
-        set(name: string, value: string, options?: Partial<import("next/dist/compiled/@edge-runtime/cookies").ResponseCookie>) {
+        set(name, value, options) {
           redirectResponse.cookies.set({ name, value, ...(options ?? {}) });
         },
-        remove(name: string, options?: Partial<import("next/dist/compiled/@edge-runtime/cookies").ResponseCookie>) {
+        remove(name, options) {
           redirectResponse.cookies.set({ name, value: "", ...(options ?? {}), maxAge: 0 });
         },
       },
