@@ -25,7 +25,6 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Refresh session if needed
-  await supabase.auth.getUser();
+  await supabase.auth.getUser(); // refresh session if needed
   return response;
 }

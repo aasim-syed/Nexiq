@@ -4,7 +4,11 @@ import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 type CookieOpts = Partial<ResponseCookie>;
 
-export async function createClient() {
+/**
+ * For Server Components only (cannot modify cookies).
+ * Use this in pages/layouts/components on the server.
+ */
+export async function createRSCClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -15,12 +19,9 @@ export async function createClient() {
         get(name: string) {
           return cookieStore.get(name)?.value ?? null;
         },
-        set(name: string, value: string, options?: CookieOpts) {
-          cookieStore.set({ name, value, ...(options ?? {}) });
-        },
-        remove(name: string, options?: CookieOpts) {
-          cookieStore.set({ name, value: "", ...(options ?? {}), maxAge: 0 });
-        },
+        // No-ops: Next.js forbids cookie mutation in RSCs.
+        set(_name: string, _value: string, _options?: CookieOpts) {},
+        remove(_name: string, _options?: CookieOpts) {},
       },
     }
   );
