@@ -1,11 +1,9 @@
-import { requireUser } from "@/utils/auth/requireUser";
+import { redirect } from "next/navigation";
+import { createClient } from "@/utils/supabase/server";
 
-export default async function Home() {
-  const user = await requireUser(); // redirects to /login if not signed in
-  return (
-    <main style={{ padding: 32 }}>
-      <h1>Welcome, {user.email}</h1>
-      <p>You're authenticated. Put your dashboard here.</p>
-    </main>
-  );
+export default async function PrivatePage() {
+  const sb = await createClient();
+  const { data } = await sb.auth.getUser();
+  if (!data?.user) redirect("/login");
+  return <div className="h1">Hello {data.user.email}</div>;
 }

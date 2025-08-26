@@ -1,31 +1,56 @@
-export type Column<T> = { key: keyof T; header: string; render?: (row: T) => React.ReactNode };
+import * as React from "react";
 
+export type Column<T> = {
+  key: keyof T;
+  header: string;
+  render?: (row: T) => React.ReactNode;
+};
 
-export default function DataTable<T extends { id: string | number }>({ columns, data }: { columns: Column<T>[]; data: T[]; }) {
-return (
-<div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-<table className="min-w-full divide-y divide-gray-200">
-<thead className="bg-gray-50">
-<tr>
-{columns.map((c) => (
-<th key={String(c.key)} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-{c.header}
-</th>
-))}
-</tr>
-</thead>
-<tbody className="divide-y divide-gray-100 bg-white">
-{data.map((row) => (
-<tr key={row.id}>
-{columns.map((c) => (
-<td key={String(c.key)} className="px-4 py-3 text-sm text-gray-800">
-{c.render ? c.render(row) : String(row[c.key])}
-</td>
-))}
-</tr>
-))}
-</tbody>
-</table>
-</div>
-);
+type Props<T> = {
+  // Accept readonly arrays so callers can use `as const`
+  columns: ReadonlyArray<Column<T>>;
+  data: ReadonlyArray<T>;
+  // Optional row key selector
+  getRowKey?: (row: T, index: number) => React.Key;
+};
+
+export default function DataTable<T extends Record<string, unknown>>({
+  columns,
+  data,
+  getRowKey,
+}: Props<T>) {
+  const resolveKey: (row: T, index: number) => React.Key =
+    getRowKey ??
+    ((row, idx) => {
+      const maybe = (row as Record<string, unknown>).id;
+      if (typeof maybe === "string" || typeof maybe === "number") return maybe;
+      return idx; // fallback to stable index
+    });
+
+  return (
+    <div className="overflow-x-auto rounded-2xl border">
+      <table className="min-w-full text-sm">
+        <thead className="bg-gray-50">
+          <tr>
+            {columns.map((c) => (
+              <th key={String(c.key)} className="px-3 py-2 text-left font-semibold">
+                {c.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, i) => (
+            <tr key={resolveKey(row, i)} className="border-t">
+              {columns.map((c) => (
+                <td key={String(c.key)} className="px-3 py-2">
+                  {c.render ? c.render(row) : String(row[c.key] ?? "")}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
